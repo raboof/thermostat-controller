@@ -28,9 +28,9 @@ function updatePin() {
       if (ramping_up && temperature > (target - 1)) {
         console.log("Ramping up, turning off");
         pin.set(1, function(){});
-      // a 0.2 buffer to prevent continuously turning the heater on and off 
+      // a 0.1 buffer to prevent continuously turning the heater on and off
       // when close to the target
-      } else if (temperature < (target - 0.2)) {
+      } else if (temperature < (target - 0.1)) {
         console.log("Turning on");
         pin.set(0, function(){});
       }
