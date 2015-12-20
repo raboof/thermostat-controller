@@ -30,18 +30,9 @@ function record_temperature() {
   }
 }
 
-function update_interval(temp_change) {
-  if (temp_change == 0) {
-    interval += 1;
-  } else {
-    interval -= 1;
-  }
-}
-
 function get_temp_over_time() {
   if (old_temp && new_temp) {
     var temp_change = new_temp - old_temp;
-    update_interval(temp_change);
     var time = new_time - old_time;
     return temp_change / time;
   }
