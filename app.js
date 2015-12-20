@@ -5,10 +5,13 @@ var gpio = require('gpio');
 
 var temperature;
 var target;
-var ramping_up = false;
 
-var temp_over_time;
-var temp_record = [];
+var old_temp;
+var new_temp;
+var old_time;
+var new_time;
+var interval = 24;
+var counter = 0;
 
 var pin = gpio.export(process.env.HEATING_GPIO_OUT, {
   direction: 'high',
@@ -16,19 +19,30 @@ var pin = gpio.export(process.env.HEATING_GPIO_OUT, {
   }
 });
 
-function add_temp_to_record() {
-  if (temp_record.length >= 5) {
-    temp_record.shift();
+function record_temperature() {
+  counter += 1;
+  if (counter == interval) {
+    old_temp = new_temp;
+    old_time = new_time;
+    new_temp = temperature;
+    new_time = Math.floor(Date.now() / 1000);
+    counter = 0;
   }
-  temp_record.push(temperature);
+}
+
+function update_interval(temp_change) {
+  if (temp_change == 0) {
+    interval += 1;
+  } else {
+    interval -= 1;
+  }
 }
 
 function get_temp_over_time() {
-  if (temp_record.length > 0) {
-    var oldest_temp = temp_record[0];
-    var newest_temp = temp_record[temp_record.length-1];
-    var temp_change = newest_temp - oldest_temp;
-    var time = temp_record.length * 5;
+  if (old_temp && new_temp) {
+    var temp_change = new_temp - old_temp;
+    update_interval(temp_change);
+    var time = new_time - old_time;
     return temp_change / time;
   }
   return 0;
@@ -41,7 +55,7 @@ function predict_reaching_target() {
 }
 
 function updatePin() {
-  if (target && temperature){
+  if (target && temperature) {
 
     console.log("Target: " + target + ", current: " + temperature);
     
@@ -76,7 +90,7 @@ function monitor(url, callback) {
 monitor(process.env.DB_URL + '/stream/temperature', function(value) {
   console.log("got " + value + " for temperature");
   temperature = value;
-  add_temp_to_record();
+  record_temperature();
   updatePin();
 });
 monitor(process.env.DB_URL + '/stream/target', function(value) {
