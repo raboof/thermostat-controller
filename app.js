@@ -7,8 +7,8 @@ var temperature;
 var target;
 var current_target;
 
-var in_heating_cycle;
-var heating_time = 300;
+var in_heating_cycle = false;
+var heating_time = 1500;
 var started_heating_at_temp;
 var started_heating_at_time;
 var target_changed_at_time;
@@ -84,9 +84,9 @@ function updatePin() {
         } 
       }
     } else if (temperature < target - 0.2) {
+      current_target = target;
       turn_heating_on();
       in_heating_cycle = true;
-      current_target = target;
     }
   }
 }
@@ -113,9 +113,11 @@ function are_equal(array1, array2) {
 }
 
 function find_pattern() {
+
   // first find three subsequent unique temperature values, when the temperature
   // varies little, this may span some time.
-  if (unique_temps.length < 3 && is_unique(temperature, unique_temps) {
+
+  if (unique_temps.length < 3 && is_unique(temperature, unique_temps)) {
     unique_temps.push(temperature);
   }
 
@@ -123,7 +125,9 @@ function find_pattern() {
   // is highter than the second, we know the temperature is climbing
   // else, the third value must be lower than the first, since they are
   // unique values, in this case the temperature is not climbing, but dropping.
+
   if (unique_temps.length == 3) {
+
     // compare the third subsequent unique temperature with the one before
     temperature_climbing = unique_temps[2] > unique_temps[1];
     unique_temps.shift();
